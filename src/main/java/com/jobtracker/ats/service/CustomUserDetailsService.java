@@ -30,4 +30,9 @@ public class CustomUserDetailsService implements UserDetailsService{
                 Collections.singletonList(authority)
             );
     }
+
+    public User getUserByEmail(String email) {
+        return userRepository.findByEmail(email)
+            .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+    }
 }

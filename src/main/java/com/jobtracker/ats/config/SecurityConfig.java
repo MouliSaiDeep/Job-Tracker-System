@@ -3,6 +3,7 @@ package com.jobtracker.ats.config;
 import com.jobtracker.ats.service.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -31,7 +32,9 @@ public class SecurityConfig {
         http
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/auth/**").permitAll()
+                .requestMatchers("/auth/**", "/jobs").permitAll()
+                .requestMatchers(HttpMethod.POST, "/jobs").hasAnyRole("RECRUITER", "HIRING_MANAGER")
+                .requestMatchers("/applications/**").authenticated()
                 .anyRequest().authenticated()
             )
             .httpBasic(withDefaults());

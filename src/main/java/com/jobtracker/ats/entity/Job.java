@@ -20,12 +20,17 @@ public class Job {
     @Column(nullable = false)
     private String title;
 
+    @Column(columnDefinition = "TEXT")
+    private String description;
+    
     @Enumerated(EnumType.STRING)
     private JobStatus status = JobStatus.OPEN;
 
     @ManyToOne
     @JoinColumn(name = "recruiter_id", nullable = false)
     private User recruiter;
+
+    private String companyName;
 
     private LocalDateTime createdAt = LocalDateTime.now();
 }
