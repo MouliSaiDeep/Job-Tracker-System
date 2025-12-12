@@ -1,0 +1,160 @@
+{
+	"info": {
+		"_postman_id": "b5a9c9c3-4d5e-4f6a-8b7c-9d0e1f2a3b4c",
+		"name": "HireFlow ATS API",
+		"description": "API Collection for Job Application Tracking System",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Register Recruiter",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"recruiter@hireflow.com\",\n    \"password\": \"pass\",\n    \"role\": \"RECRUITER\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/auth/register",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8080",
+							"path": ["auth", "register"]
+						}
+					}
+				},
+				{
+					"name": "Register Candidate",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"student@university.edu\",\n    \"password\": \"pass\",\n    \"role\": \"CANDIDATE\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/auth/register",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8080",
+							"path": ["auth", "register"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Jobs",
+			"item": [
+				{
+					"name": "Get All Jobs (Public)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "http://localhost:8080/jobs"
+					}
+				},
+				{
+					"name": "Post Job (Recruiter Only)",
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{ "key": "password", "value": "pass", "type": "string" },
+								{ "key": "username", "value": "recruiter@hireflow.com", "type": "string" }
+							]
+						},
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Senior Java Developer\",\n    \"description\": \"Expert in Spring Boot and Microservices needed.\"\n}"
+						},
+						"url": "http://localhost:8080/jobs"
+					}
+				}
+			]
+		},
+		{
+			"name": "Applications",
+			"item": [
+				{
+					"name": "Apply for Job (Candidate)",
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{ "key": "password", "value": "pass", "type": "string" },
+								{ "key": "username", "value": "student@university.edu", "type": "string" }
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": "http://localhost:8080/applications/1"
+					}
+				},
+				{
+					"name": "Update Status (Recruiter)",
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{ "key": "password", "value": "pass", "type": "string" },
+								{ "key": "username", "value": "recruiter@hireflow.com", "type": "string" }
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"newStatus\": \"SCREENING\"\n}"
+						},
+						"url": "http://localhost:8080/applications/1/status"
+					}
+				},
+				{
+					"name": "View My Applications (Candidate)",
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{ "key": "password", "value": "pass", "type": "string" },
+								{ "key": "username", "value": "student@university.edu", "type": "string" }
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": "http://localhost:8080/applications/my-applications"
+					}
+				},
+				{
+					"name": "View Application History (Recruiter)",
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{ "key": "password", "value": "pass", "type": "string" },
+								{ "key": "username", "value": "recruiter@hireflow.com", "type": "string" }
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": "http://localhost:8080/applications/1/history"
+					}
+				}
+			]
+		}
+	]
+}
