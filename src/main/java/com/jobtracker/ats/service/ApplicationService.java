@@ -33,7 +33,7 @@ public class ApplicationService {
     private ApplicationHistoryRepository historyRepository;
 
     @Autowired
-    private RabbitMQSender rabbitMQSender; // <--- NEW INJECTION
+    private RabbitMQSender rabbitMQSender;
 
     private static final Map<ApplicationStatus, Set<ApplicationStatus>> VALID_TRANSITIONS = Map.of(
         ApplicationStatus.APPLIED, Set.of(ApplicationStatus.SCREENING, ApplicationStatus.REJECTED),
@@ -58,6 +58,7 @@ public class ApplicationService {
         return allowed.contains(newStatus);
     }
     
+    // --- KEY CHANGE HERE ---
     public Application applyForJob(Long jobId) {
         User candidate = getCurrentUser();
         Job job = jobRepository.findById(jobId)
@@ -75,6 +76,7 @@ public class ApplicationService {
         
         Application savedApplication = applicationRepository.save(application);
         
+        // Audit Log
         ApplicationHistory history = new ApplicationHistory();
         history.setApplication(savedApplication);
         history.setOldStatus(null);
@@ -82,13 +84,22 @@ public class ApplicationService {
         history.setUpdatedBy(candidate);
         historyRepository.save(history);
         
-        // --- ASYNC NOTIFICATION ---
-        NotificationMessage msg = new NotificationMessage(
+        // 1. Notify Candidate
+        NotificationMessage candidateMsg = new NotificationMessage(
             candidate.getEmail(),
             "Application Received",
             "You have successfully applied for: " + job.getTitle()
         );
-        rabbitMQSender.sendNotification(msg);
+        rabbitMQSender.sendNotification(candidateMsg);
+
+        // 2. Notify Recruiter (FIXED)
+        // We get the recruiter's email from the Job entity
+        NotificationMessage recruiterMsg = new NotificationMessage(
+            job.getRecruiter().getEmail(),
+            "New Candidate Applied",
+            "A new candidate (" + candidate.getEmail() + ") has applied for your job: " + job.getTitle()
+        );
+        rabbitMQSender.sendNotification(recruiterMsg);
         
         return savedApplication;
     }
@@ -120,7 +131,7 @@ public class ApplicationService {
         history.setUpdatedBy(updater);
         historyRepository.save(history);
         
-        // --- ASYNC NOTIFICATION ---
+        // Notify Candidate of status change
         NotificationMessage msg = new NotificationMessage(
             application.getCandidate().getEmail(),
             "Application Status Update",
@@ -131,7 +142,7 @@ public class ApplicationService {
         return updatedApplication;
     }
 
-    // View History
+    // Viewing Methods
     public List<ApplicationHistory> getApplicationHistory(Long applicationId) {
         Application application = applicationRepository.findById(applicationId)
                 .orElseThrow(() -> new RuntimeException("Application not found"));
@@ -144,7 +155,6 @@ public class ApplicationService {
         return historyRepository.findByApplicationId(applicationId);
     }
 
-    // Recruiter View
     public List<Application> getApplicationsForJob(Long jobId) {
         User currentUser = getCurrentUser();
         if (currentUser.getRole() == Role.CANDIDATE) {
@@ -153,7 +163,6 @@ public class ApplicationService {
         return applicationRepository.findByJobId(jobId);
     }
 
-    // Candidate View
     public List<Application> getMyApplications() {
         User currentUser = getCurrentUser();
         if (currentUser.getRole() != Role.CANDIDATE) {
